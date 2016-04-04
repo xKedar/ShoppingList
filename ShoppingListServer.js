@@ -1,7 +1,12 @@
 // npm install express
 var express = require('express');
 var app = express();
-
+var fs=require("fs");
+//variabili 
+var home=fs.readFileSync('home.html',"utf8");
+var choose_list=fs.readFileSync('choose_list.html',"utf8");
+var nuova_lista=fs.readFileSync('nuova_lista.html',"utf8");
+var aggiornare_lista=fs.readFileSync('aggiornare_lista.html',"utf8");
 // richiede l' istallazione di body-parser (npm install body-parser)
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: false}));
@@ -17,7 +22,7 @@ var ListModel = mongoose.model("List");
 
 //HOMEPAGE
 app.get('/', function(req, res){
-    res.send('Welcome to RETI DI CALCOLATORI Shopping List');
+    res.send(home);
     });
 
 //FIXATO: Sistemare controllo per username already taken. 
@@ -47,7 +52,7 @@ app.post('/login', function(req,res){
     PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
         if (num.length<=0) res.send('Wrong Id or Password');
         else{
-            res.send(num[0].Accessible);
+            res.send(choose_list);
         }
     });
 });
@@ -70,7 +75,19 @@ function login(username, password, list){
     });
 }
 
-
+//FUNZIONE CHE APRE LA LISTA SENZA STAMPA (PER UPDATE)
+app.post('/update_list', function(req,res){
+    console.log(req.body);
+    console.log(login(req.body.user, req.body.pass, req.body.ListId));
+    if(login(req.body.user, req.body.pass, req.body.ListId)){
+    ListModel.find({"ListId":req.body.ListId}, function(err,output){
+        res.send(aggiornare_lista);
+        });
+    }
+    else{
+        res.send('This resource is not avaible for you.');
+    }
+});
 //CAMBIATA DA GET A POST PER PASSAGGIO DATI LOGIN 
 app.post('/list', function(req,res){
     console.log(req.body);
@@ -100,13 +117,13 @@ app.post('/newlist', function(req, res) {
         newList.ListId = req.body.ListId;
         newList.save(function(err){console.log(err);});
         PersonModel.update({"id":req.body.personId},{ "$push": {"Accessible": req.body.ListId} }, function(err,res1){
-        res.send('List is ready, you can add items now');
+        res.send(nuova_lista);
     });
 });
 
 app.post('/removelist', function(req, res) {
     ListModel.remove({"ListId":req.body.ListId}, function(err,res1){
-        res.send('You bought everything, you can go home');
+        res.send(choose_list);
     });
 });
 
@@ -114,7 +131,7 @@ app.post('/addp', function(req, res) {
     console.log(req.body);
     PersonModel.update({"id":req.body.personId},{ "$push": {"Accessible": req.body.ListId} }, function(err,res1){
     });
-    res.send('New Person added.');
+    res.send(choose_list);
 
 });
 
@@ -124,7 +141,7 @@ app.post('/additem', function(req, res) {
     var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
     ListModel.update({"ListId":req.body.ListId},{ "$push": {"entry": tObj} }, function(err,res1){
         if(err){console.log(err);}
-        res.send('Item is added');
+        res.send(choose_list);
     });
 });
 
@@ -133,7 +150,7 @@ app.post('/removeitem', function(req, res) {
     var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
     ListModel.update({"ListId":req.body.ListId},{ "$pull": {"entry": tObj} }, function(err,res1){
         if(err){console.log(err);}
-        res.send('Item is removed');
+        res.send(choose_list);
     });
 });
 
