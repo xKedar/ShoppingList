@@ -1,11 +1,13 @@
+// npm install express
 var express = require('express');
 var app = express();
 
+// richiede l' istallazione di body-parser (npm install body-parser)
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-//mongoose for interaction with mongodb
+//mongoose for interaction with mongodb (npm install mongoose)
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/testing');
 require("./PersonSchema.js");
@@ -13,49 +15,79 @@ var PersonModel = mongoose.model("Person");
 require("./ListSchema.js");
 var ListModel = mongoose.model("List");
 
-
+//HOMEPAGE
 app.get('/', function(req, res){
-       res.send('Welcome to RIM Shopping List');
-   });
-   
-   
-//TO DO: Sistemare controllo per username already taken.
+    res.send('Welcome to RETI DI CALCOLATORI Shopping List');
+    });
+
+//FIXATO: Sistemare controllo per username already taken. 
 app.post('/register', function(req,res){
-    console.log(req.body);
-    console.log(PersonModel.count({"id": req.body.Id}));
-    if(PersonModel.count({"id": req.body.Id})>0){ res.send('Username already taken');}
-    else{
-        console.log("We are in else");
-    var newPerson = new PersonModel();
-        newPerson.id = req.body.Id;
-        newPerson.Password = req.body.Password;
-        newPerson.save(function(err){console.log(err);});
-        res.send('Your account is ready');
-    }
+    PersonModel.count({"id": req.body.Id}, function(err, num){
+        if (num>0) res.send('Username already taken');
+        else{
+            var newPerson = new PersonModel();
+            newPerson.id = req.body.Id;
+            newPerson.Password = req.body.Password;
+            newPerson.save(function(err){console.log(err);});
+            res.send('Your account is ready');
+        }
+    });
 });
 
-//Restituisce la lista di tutti gli utenti del servizio.
+//Restituisce la lista di tutti gli utenti del servizio. SERVE A ME PER IL DEBUG
 app.get('/account/', function(req,res){
-   PersonModel.find({}, function(err,output){
+    PersonModel.find({}, function(err,output){
        res.send(output);
        });
 });
 
-//TO DO: sistemare query wrong id or password (stessa soluzione della registrazione)
+//FIXATO: sistemare query wrong id or password (stessa soluzione della registrazione)
+//ORA FA UNA QUERY IN MENO
 app.post('/login', function(req,res){
-   console.log(req.body);
-   if(PersonModel.count({"id": req.body.Id, "Password": req.body.Password})<=0) res.send('Wrong Id or Password');
-   else{
-       PersonModel.find({"id": req.body.Id}, {"Accessible" :1},function(err,output){
-           res.send(output);
-       });
-   }
+    PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
+        if (num.length<=0) res.send('Wrong Id or Password');
+        else{
+            res.send(num[0].Accessible);
+        }
+    });
 });
 
+//funzione per il controllo che l' utente che richiede le modifiche sia autorizzato alla lista che chiede
+//e aggirare il problema stateless
+function login(username, password, list){
+    return PersonModel.find({"id": username, "Password": password}, function(err, num){
+        if (num.length<=0) return 0;
+        else{
+            for(var i=0; i< num[0].Accessible.length; i++){
+                console.log('for');
+                if(num[0].Accessible[i]==list){ 
+                    console.log('if');
+                    return 1;
+                }
+            }
+            return 0;
+        }
+    });
+}
 
 
+//CAMBIATA DA GET A POST PER PASSAGGIO DATI LOGIN 
+app.post('/list', function(req,res){
+    console.log(req.body);
+    console.log(login(req.body.user, req.body.pass, req.body.ListId));
+    if(login(req.body.user, req.body.pass, req.body.ListId)){
+    ListModel.find({"ListId":req.body.ListId}, function(err,output){
+        res.send(output);
+        });
+    }
+    else{
+        res.send('This resource is not avaible for you.');
+    }
+});
+
+//VERSIONE PER DEBUG più comoda per me
 app.get('/list/:param1', function(req,res){
-   ListModel.find({"ListId":req.params.param1}, function(err,output){
+    ListModel.find({"ListId":req.params.param1}, function(err,output){
        res.send(output);
        });
 });
@@ -73,11 +105,10 @@ app.post('/newlist', function(req, res) {
 });
 
 app.post('/removelist', function(req, res) {
-        ListModel.remove({"ListId":req.body.ListId}, function(err,res1){
+    ListModel.remove({"ListId":req.body.ListId}, function(err,res1){
         res.send('You bought everything, you can go home');
     });
 });
-
 
 app.post('/addp', function(req, res) {
     console.log(req.body);
@@ -105,7 +136,5 @@ app.post('/removeitem', function(req, res) {
         res.send('Item is removed');
     });
 });
-
-
 
 app.listen(3000);
