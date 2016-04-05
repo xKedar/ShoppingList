@@ -7,6 +7,9 @@ var home=fs.readFileSync('home.html',"utf8");
 var choose_list=fs.readFileSync('choose_list.html',"utf8");
 var nuova_lista=fs.readFileSync('nuova_lista.html',"utf8");
 var aggiornare_lista=fs.readFileSync('aggiornare_lista.html',"utf8");
+var back=fs.readFileSync('./back.jpg');
+var image=fs.readFileSync('./image1.jpg');
+var logo=fs.readFileSync('./logo.png');
 // richiede l' istallazione di body-parser (npm install body-parser)
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: false}));
@@ -24,7 +27,19 @@ var ListModel = mongoose.model("List");
 app.get('/', function(req, res){
     res.send(home);
     });
-
+//immagini
+app.get('/back.jpg', function(req, res){
+    res.writeHead(200, {'Content-Type': 'image/jpg' });
+    res.end(back, 'binary');
+    });
+app.get('/image1.jpg', function(req, res){
+   res.writeHead(200, {'Content-Type': 'image/jpg' });
+     res.end(image, 'binary');
+    });
+app.get('/logo.png', function(req, res){
+     res.writeHead(200, {'Content-Type': 'image/png' });
+     res.end(logo, 'binary');
+    });
 //FIXATO: Sistemare controllo per username already taken. 
 app.post('/register', function(req,res){
     PersonModel.count({"id": req.body.Id}, function(err, num){
