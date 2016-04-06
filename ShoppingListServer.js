@@ -80,16 +80,17 @@ app.post('/login', function(req,res){
 
 //FUNZIONE CHE APRE LA LISTA SENZA STAMPA (PER UPDATE)
 app.post('/update_list', function(req,res){
-    console.log(req.body);
-    console.log(login(req.body.user, req.body.pass, req.body.ListId));
-    if(login(req.body.user, req.body.pass, req.body.ListId)){
-    ListModel.find({"ListId":req.body.ListId}, function(err,output){
-        res.send(aggiornare_lista);
-        });
-    }
-    else{
-        res.send('This resource is not avaible for you.');
-    }
+    ListModel.count({"ListId": req.body.ListId}, function(err, nume){
+        if (nume<=0) res.send('List name not exist');
+        else{
+            PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
+                if (num.length<=0) res.send('This resource is not avaible for you.');
+                else{
+                    res.send(aggiornare_lista);
+                }
+            });
+        }
+    });
 });
 //CAMBIATA DA GET A POST PER PASSAGGIO DATI LOGIN 
 app.post('/list', function(req,res){
@@ -175,9 +176,9 @@ app.post('/addp', function(req, res) {
 //TO DO: controllare che l' item non sia già nella lista, se c'è aggiornare la quantità
 app.post('/additem', function(req, res) {
     PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
-        if (num.length<=0) res.send('This resource is not avaible for you.');
+        if (num.length<=0) res.send('This resource is not avaible for youA.');
         else{
-            if(num[0].Accessible.length ==0) res.send('This resource is not avaible for you.');
+            if(num[0].Accessible.length ==0) res.send('This resource is not avaible for youB.');
             for(var i=0; i< num[0].Accessible.length; i++){
                 if(num[0].Accessible[i]==req.body.ListId){
                     var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
@@ -187,7 +188,7 @@ app.post('/additem', function(req, res) {
                     });
                 }
                 else{
-                    if(i==num[0].Accessible.length-1) res.send('This resource is not avaible for you.');
+                    if(i==num[0].Accessible.length-1) res.send('This resource is not avaible for youC.');
                 }
             }
         }
