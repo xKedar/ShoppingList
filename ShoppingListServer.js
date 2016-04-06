@@ -55,7 +55,7 @@ app.post('/register', function(req,res){
             newPerson.id = req.body.Id;
             newPerson.Password = req.body.Password;
             newPerson.save(function(err){console.log(err);});
-            res.send('Your account is ready');
+            res.send(home);
         }
     });
 });
