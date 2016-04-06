@@ -78,24 +78,6 @@ app.post('/login', function(req,res){
     });
 });
 
-//funzione per il controllo che l' utente che richiede le modifiche sia autorizzato alla lista che chiede
-//e aggirare il problema stateless
-function login(username, password, list){
-    return PersonModel.find({"id": username, "Password": password}, function(err, num){
-        if (num.length<=0) return 0;
-        else{
-            for(var i=0; i< num[0].Accessible.length; i++){
-                console.log('for');
-                if(num[0].Accessible[i]==list){ 
-                    console.log('if');
-                    return 1;
-                }
-            }
-            return 0;
-        }
-    });
-}
-
 //FUNZIONE CHE APRE LA LISTA SENZA STAMPA (PER UPDATE)
 app.post('/update_list', function(req,res){
     console.log(req.body);
@@ -111,67 +93,125 @@ app.post('/update_list', function(req,res){
 });
 //CAMBIATA DA GET A POST PER PASSAGGIO DATI LOGIN 
 app.post('/list', function(req,res){
-    console.log(req.body);
-    console.log(login(req.body.user, req.body.pass, req.body.ListId));
-    if(login(req.body.user, req.body.pass, req.body.ListId)){
-    ListModel.find({"ListId":req.body.ListId}, function(err,output){
-        res.send(output);
-        });
-    }
-    else{
-        res.send('This resource is not avaible for you.');
-    }
+    PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
+        if (num.length<=0) res.send('This resource is not avaible for you.');
+        else{
+            for(var i=0; i< num[0].Accessible.length; i++){
+                if(num[0].Accessible[i]==req.body.ListId){
+                    ListModel.find({"ListId":req.body.ListId}, function(err,output){
+                    res.send(output);
+                    });
+                }
+                else{
+                    if(i==num[0].Accessible.length-1) res.send('This resource is not avaible for you.');
+                }
+            }
+        }
+    });
 });
-
-//VERSIONE PER DEBUG più comoda per me
-app.get('/list/:param1', function(req,res){
-    ListModel.find({"ListId":req.params.param1}, function(err,output){
-       res.send(output);
-       });
-});
-
 
 //TO DO: controllare che non esista una lista con lo stesso identificativo di quella che stiamo per creare
 app.post('/newlist', function(req, res) {
-    var newList = new ListModel();
-        console.log(req.body);
-        newList.ListId = req.body.ListId;
-        newList.save(function(err){console.log(err);});
-        PersonModel.update({"id":req.body.personId},{ "$push": {"Accessible": req.body.ListId} }, function(err,res1){
-        res.send(nuova_lista);
+    ListModel.count({"ListId": req.body.ListId}, function(err, nume){
+        if (nume>0) res.send('List name already taken');
+        else{
+            PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
+                if (num.length<=0) res.send('This resource is not avaible for you.');
+                else{
+                    var newList = new ListModel();
+                    newList.ListId = req.body.ListId;
+                    newList.save(function(err){console.log(err);});
+                    PersonModel.update({"id":req.body.Id},{ "$push": {"Accessible": req.body.ListId} }, function(err,res1){
+                        res.send(nuova_lista);
+                    });
+                }
+            });
+        }
     });
 });
 
 app.post('/removelist', function(req, res) {
-    ListModel.remove({"ListId":req.body.ListId}, function(err,res1){
-        res.send(choose_list);
+    PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
+        if (num.length<=0) res.send('This resource is not avaible for you.');
+        else{
+            if(num[0].Accessible.length ==0) res.send('This resource is not avaible for you.');
+            for(var i=0; i< num[0].Accessible.length; i++){
+                if(num[0].Accessible[i]==req.body.ListId){
+                    console.log('if');
+                    ListModel.remove({"ListId":req.body.ListId}, function(err,res1){
+                        PersonModel.update({"id":req.body.Id},{ "$pull": {"Accessible": req.body.ListId} }, function(err,res2){
+                            res.send(choose_list);
+                        });
+                    });
+                }
+                else{
+                    console.log('else');
+                    if(i==num[0].Accessible.length-1) res.send('This resource is not avaible for you.');
+                }
+            }
+        }
     });
 });
 
 app.post('/addp', function(req, res) {
-    console.log(req.body);
-    PersonModel.update({"id":req.body.personId},{ "$push": {"Accessible": req.body.ListId} }, function(err,res1){
+    PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
+        if (num.length<=0) res.send('This resource is not avaible for you.');
+        else{
+            if(num[0].Accessible.length ==0) res.send('This resource is not avaible for you.');
+            for(var i=0; i< num[0].Accessible.length; i++){
+                if(num[0].Accessible[i]==req.body.ListId){
+                    PersonModel.update({"id":req.body.PersonId},{ "$push": {"Accessible": req.body.ListId} }, function(err,res1){
+                        res.send(choose_list);
+                    });
+                }
+                else{
+                    if(i==num[0].Accessible.length-1) res.send('This resource is not avaible for you.');
+                }
+            }
+        }
     });
-    res.send(choose_list);
-
 });
 
 //TO DO: controllare che l' item non sia già nella lista, se c'è aggiornare la quantità
 app.post('/additem', function(req, res) {
-    console.log(req.body);
-    var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
-    ListModel.update({"ListId":req.body.ListId},{ "$push": {"entry": tObj} }, function(err,res1){
-        if(err){console.log(err);}
-        res.send(choose_list);
+    PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
+        if (num.length<=0) res.send('This resource is not avaible for you.');
+        else{
+            if(num[0].Accessible.length ==0) res.send('This resource is not avaible for you.');
+            for(var i=0; i< num[0].Accessible.length; i++){
+                if(num[0].Accessible[i]==req.body.ListId){
+                    var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
+                    ListModel.update({"ListId":req.body.ListId},{ "$push": {"entry": tObj} }, function(err,res1){
+                        if(err){console.log(err);}
+                        res.send(choose_list);
+                    });
+                }
+                else{
+                    if(i==num[0].Accessible.length-1) res.send('This resource is not avaible for you.');
+                }
+            }
+        }
     });
 });
 
 app.post('/removeitem', function(req, res) {
-    console.log(req.body);
-    var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
-    ListModel.update({"ListId":req.body.ListId},{ "$pull": {"entry": tObj} }, function(err,res1){
-        if(err){console.log(err);}
-        res.send(choose_list);
+    PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
+        if (num.length<=0) res.send('This resource is not avaible for you.');
+        else{
+            if(num[0].Accessible.length ==0) res.send('This resource is not avaible for you.');
+            for(var i=0; i< num[0].Accessible.length; i++){
+                if(num[0].Accessible[i]==req.body.ListId){
+                    var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
+                    ListModel.update({"ListId":req.body.ListId},{ "$pull": {"entry": tObj} }, function(err,res1){
+                        if(err){console.log(err);}
+                            res.send(choose_list);
+                    });
+                }
+                else{
+                    if(i==num[0].Accessible.length-1) res.send('This resource is not avaible for you.');
+                }
+            }
+        }
     });
 });
 
