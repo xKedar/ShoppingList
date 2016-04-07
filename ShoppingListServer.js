@@ -2,6 +2,10 @@
 var express = require('express');
 var app = express();
 var fs=require("fs");
+var express = require('express');
+var exphbs  = require('express-handlebars');
+var request = require("request");
+var qs = require("querystring");
 //variabili 
 var home=fs.readFileSync('home.html',"utf8");
 var choose_list=fs.readFileSync('choose_list.html',"utf8");
@@ -11,7 +15,9 @@ var register=fs.readFileSync('register.html',"utf8");
 var back=fs.readFileSync('./back.jpg');
 var image=fs.readFileSync('./image1.jpg');
 var logo=fs.readFileSync('./logo.png');
-
+//Ne ho bisogno per poter utilizzare handlebars
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
 // richiede l' istallazione di body-parser (npm install body-parser)
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: false}));
@@ -24,7 +30,6 @@ require("./PersonSchema.js");
 var PersonModel = mongoose.model("Person");
 require("./ListSchema.js");
 var ListModel = mongoose.model("List");
-
 //HOMEPAGE
 app.get('/', function(req, res){
     res.send(home);
@@ -214,6 +219,103 @@ app.post('/removeitem', function(req, res) {
             }
         }
     });
+});
+// twitter
+//Token preso al seguente indirizzo
+var requestTokenUrl = "https://api.twitter.com/oauth/request_token";
+
+
+
+//Chiavi di default dell'app che offre il servizio
+//Queste sono le mie:
+//var CONSUMER_KEY = "pBmDZZnfK3LrUiM940UaG7SqD";
+//var CONSUMER_SECRET = "VLIj2EF0BMOEaTSHFw04GTOPzueDwgdDznZqrjB5VraJNvBCIk";
+var CONSUMER_KEY = "FoQWQIqTypas9MkE3df2BBe1U";
+var CONSUMER_SECRET = "omztlw8el7p9u3vw9JYOCuMGFXBnQ0eVCd6HWbTAftSlfHSsY7";
+
+// Inizzializzo un oggetto oauth
+var oauth = {
+	callback : "http://localhost:3000/autenticato",
+  
+  consumer_key  : CONSUMER_KEY,
+  consumer_secret : CONSUMER_SECRET
+}
+var oauthToken = "";
+var oauthTokenSecret = "";
+app.get('/twitter', function (req, res) {
+  
+  	request.post({url : requestTokenUrl, oauth : oauth}, function (e, r, body){
+
+    
+    var reqData = qs.parse(body);
+    oauthToken = reqData.oauth_token;
+    oauthTokenSecret = reqData.oauth_token_secret;
+
+    //-----------------------
+    
+	var uri = 'https://api.twitter.com/oauth/authorize'
+    
+    + '?' + qs.stringify({oauth_token: oauthToken})
+	console.log(uri);
+    res.render('home', {url : uri});
+  });
+
+});
+
+var oauth_aut = {
+	token : '',
+	token_secret : '',
+	verifier : ''
+}
+
+
+app.get("/autenticato", function(req, res){
+  var authReqData = req.query;
+  oauth_aut.token = authReqData.oauth_token;
+  oauth_aut.token_secret = oauthTokenSecret;
+  oauth_aut.verifier = authReqData.oauth_verifier;
+
+
+  var accessTokenUrl = "https://api.twitter.com/oauth/access_token";
+  // Quì posto il messaggio su Twitter dopo aver ottenuto l'autorizzazione....ovviamente il messaggio l'ho elaborato prima attraverso una form...
+  request.post({url : accessTokenUrl , oauth : oauth_aut}, function(e, r, body){
+    var authenticatedData = qs.parse(body);
+    console.log(authenticatedData);
+
+
+	
+var sss="Go to shopping!!!";
+var url = 'https://api.twitter.com/1.1/statuses/update.json?status='+sss;
+
+    var params = {
+      consumer_key : CONSUMER_KEY,
+      consumer_secret : CONSUMER_SECRET,
+      token: authenticatedData.oauth_token,
+      token_secret : authenticatedData.oauth_token_secret
+
+};
+
+
+    request.post({url:url, oauth:params}, function(error, response, body) {
+
+        if (error) 
+        {
+          console.log("Error occured->: "+ error);
+		  res.send("errore");
+        } 
+        else 
+        {
+            body = JSON.parse(body);
+            console.log(body);
+            res.send(choose_list);
+        }
+
+   });
+
+
+  });
+
+
 });
 
 app.listen(3000);
