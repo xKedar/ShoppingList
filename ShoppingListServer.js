@@ -6,6 +6,7 @@ var express = require('express');
 var exphbs  = require('express-handlebars');
 var request = require("request");
 var qs = require("querystring");
+var google = require('./Google.js'); //ricerca custom su google
 //variabili 
 var home=fs.readFileSync('home.html',"utf8");
 var choose_list=fs.readFileSync('choose_list.html',"utf8");
@@ -99,6 +100,7 @@ app.post('/update_list', function(req,res){
 });
 //CAMBIATA DA GET A POST PER PASSAGGIO DATI LOGIN 
 app.post('/list', function(req,res){
+	//google.cerca('oggetto');
     PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
         if (num.length<=0) res.send('This resource is not avaible for you.');
         else{
