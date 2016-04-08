@@ -100,13 +100,13 @@ app.post('/update_list', function(req,res){
 });
 //CAMBIATA DA GET A POST PER PASSAGGIO DATI LOGIN 
 app.post('/list', function(req,res){
-	//google.cerca('oggetto');
     PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
         if (num.length<=0) res.send('This resource is not avaible for you.');
         else{
             for(var i=0; i< num[0].Accessible.length; i++){
                 if(num[0].Accessible[i]==req.body.ListId){
                     ListModel.find({"ListId":req.body.ListId}, function(err,output){
+					google.cerca('oggetto')
                     res.send(output);
                     });
                 }
