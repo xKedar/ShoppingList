@@ -6,7 +6,7 @@ var express = require('express');
 var exphbs  = require('express-handlebars');
 var request = require("request");
 var qs = require("querystring");
-var google = require('./Google.js'); //ricerca custom su google
+var google = require('./Google.js'); //ricerca custom su google ha bisogno di npm install sync-request
 //variabili 
 var home=fs.readFileSync('home.html',"utf8");
 var choose_list=fs.readFileSync('choose_list.html',"utf8");
@@ -106,8 +106,8 @@ app.post('/list', function(req,res){
             for(var i=0; i< num[0].Accessible.length; i++){
                 if(num[0].Accessible[i]==req.body.ListId){
                     ListModel.find({"ListId":req.body.ListId}, function(err,output){
-					google.cerca('oggetto')
-                    res.send(output);
+					var res = google.cerca('albero')
+                    res.send(output + res);
                     });
                 }
                 else{
