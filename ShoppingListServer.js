@@ -106,8 +106,8 @@ app.post('/list', function(req,res){
             for(var i=0; i< num[0].Accessible.length; i++){
                 if(num[0].Accessible[i]==req.body.ListId){
                     ListModel.find({"ListId":req.body.ListId}, function(err,output){
-					var res = google.cerca('albero')
-                    res.send(output + res);
+					var result = google.cerca('albero')
+                    res.send(output + result);
                     });
                 }
                 else{

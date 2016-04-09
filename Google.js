@@ -6,9 +6,9 @@ var type = '&searchType=image'
 
 module.exports = {
 	cerca: function(query){
-		var res = request('https://www.googleapis.com/customsearch/v1?'+key+cx+type+'&q='+query);
+		var res = request('GET','https://www.googleapis.com/customsearch/v1?'+key+cx+type+'&q='+query);
 		//parse body
-		var risultato = JSON.parse(res);
+		var risultato = JSON.parse(res.getBody());
 		risultato = risultato.items[0].link;
 		return risultato;
 		
