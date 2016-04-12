@@ -229,11 +229,10 @@ var requestTokenUrl = "https://api.twitter.com/oauth/request_token";
 
 
 //Chiavi di default dell'app che offre il servizio
+
 //Queste sono le mie:
-//var CONSUMER_KEY = "pBmDZZnfK3LrUiM940UaG7SqD";
-//var CONSUMER_SECRET = "VLIj2EF0BMOEaTSHFw04GTOPzueDwgdDznZqrjB5VraJNvBCIk";
-var CONSUMER_KEY = "FoQWQIqTypas9MkE3df2BBe1U";
-var CONSUMER_SECRET = "omztlw8el7p9u3vw9JYOCuMGFXBnQ0eVCd6HWbTAftSlfHSsY7";
+var CONSUMER_KEY = "1aLqWdOVQZqzAvdjnIlNsu9Ka";
+var CONSUMER_SECRET = "7gtgAd8oUt9wSF9GYiYvjRZinBRGh0i4sTVSGXsiJf8Uw3gKLx";
 
 // Inizzializzo un oggetto oauth
 var oauth = {
@@ -286,7 +285,7 @@ app.get("/autenticato", function(req, res){
 
 
 	
-var sss="Go to shopping!!!";
+var sss="Go to shopping";
 var url = 'https://api.twitter.com/1.1/statuses/update.json?status='+sss;
 
     var params = {
