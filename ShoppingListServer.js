@@ -8,6 +8,9 @@ var request = require("request");
 var qs = require("querystring");
 var google = require('./Google.js'); //ricerca custom su google ha bisogno di npm install sync-request
 //variabili 
+var notifica = require('./notifica.js');
+var client = fs.readFileSync('client.js',"utf8");
+var stomp = fs.readFileSync('stomp.js',"utf8");
 var home=fs.readFileSync('home.html',"utf8");
 var choose_list=fs.readFileSync('choose_list.html',"utf8");
 var nuova_lista=fs.readFileSync('nuova_lista.html',"utf8");
@@ -92,6 +95,7 @@ app.post('/update_list', function(req,res){
             PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
                 if (num.length<=0) res.send('This resource is not avaible for you.');
                 else{
+					notifica.notifica("lista");
                     res.send(aggiornare_lista);
                 }
             });
@@ -107,12 +111,13 @@ app.post('/list', function(req,res){
                 if(num[0].Accessible[i]==req.body.ListId){
                     ListModel.find({"ListId":req.body.ListId}, function(err,output){
 					output = output.toString().match(/Product: \'.+\'/ig);
-					var stringa="<html> <body> <ul>";
+					var stringa="<html> <head> <script src=\"/stomp.js\"></script> \
+<script src=\"/client.js\"></script></head><body> <ul>";
 					for (var j=0; j<output.length; j++)
 					{
 						var oggetto = output[j].replace(/Product: '/,"");
 						oggetto = oggetto.replace(/'/,"");
-						var result = google.cerca(oggetto);
+						var result = "http://www.sognipedia.it/wp-content/uploads/2015/04/farfalla.jpg"//google.cerca(oggetto);
 						stringa+="<li>"+ oggetto + "      "+  "<img src=\""+ result + "\"> <br>"
 					}
 					stringa+=" </ul></body> </html>"
@@ -231,6 +236,15 @@ app.post('/removeitem', function(req, res) {
         }
     });
 });
+
+app.get('/client.js', function(req,res){
+	res.send(client);
+});
+
+app.get('/stomp.js', function(req,res){
+	res.send(stomp);
+});
+
 // twitter
 //Token preso al seguente indirizzo
 var requestTokenUrl = "https://api.twitter.com/oauth/request_token";
