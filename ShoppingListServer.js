@@ -106,8 +106,17 @@ app.post('/list', function(req,res){
             for(var i=0; i< num[0].Accessible.length; i++){
                 if(num[0].Accessible[i]==req.body.ListId){
                     ListModel.find({"ListId":req.body.ListId}, function(err,output){
-					var result = google.cerca('albero')
-                    res.send(output + result);
+					output = output.toString().match(/Product: \'.+\'/ig);
+					var stringa="<html> <body> <ul>";
+					for (var j=0; j<output.length; j++)
+					{
+						var oggetto = output[j].replace(/Product: '/,"");
+						oggetto = oggetto.replace(/'/,"");
+						var result = google.cerca(oggetto);
+						stringa+="<li>"+ oggetto + "      "+  "<img src=\""+ result + "\"> <br>"
+					}
+					stringa+=" </ul></body> </html>"
+                    res.send(stringa);
                     });
                 }
                 else{
