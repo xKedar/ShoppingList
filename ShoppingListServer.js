@@ -51,13 +51,14 @@ app.get('/logo.png', function(req, res){
      res.writeHead(200, {'Content-Type': 'image/png' });
      res.end(logo, 'binary');
     });
-//funzione per cambio pagina html da home a pagina registrazione
-app.get('/openregister', function(req, res){
-    res.send(register);
-    });
+
+app.get('/choose_list', function(req, res){
+    res.send(choose_list);
+	});
 
 //FUNZIONE CHE APRE LA LISTA SENZA STAMPA (PER UPDATE)
 app.post('/update_list', function(req,res){
+	console.log(req.body.ListId)
     ListModel.count({"ListId": req.body.ListId}, function(err, nume){
         if (nume<=0) res.send('List name do not exist');
         else{
@@ -65,16 +66,17 @@ app.post('/update_list', function(req,res){
         }
     });
 });
-
+//va gestita la lista vuota
 app.post('/list', function(req,res){
     ListModel.find({"ListId":req.body.ListId}, function(err,output){
-        if(output.lenght<=0) res.send('This list doesn\'t exist.');
+        if(output.length<=0) res.send('This list doesn\'t exist.');
             else{
-            output = output.toString().match(/Product: \'.+\'/ig);
+			console.log(output)
+            var prodotti = output.toString().match(/Product: \'.+\'/ig);
             var stringa="<html> <head> <script src=\"/stomp.js\"></script> \
     <script src=\"/client.js/"+req.body.ListId+"\"></script></head><body> <p align=\"center\"> <font size=\"48\">"+req.body.ListId+"</font> </p><ul>";
             for (var j=0; j<output.length; j++){
-                var oggetto = output[j].replace(/Product: '/,"");
+                var oggetto = prodotti[j].replace(/Product: '/,"");
                 oggetto = oggetto.replace(/'/,"");
                 var result = "http://www.sognipedia.it/wp-content/uploads/2015/04/farfalla.jpg"//google.cerca(oggetto);
                 stringa+="<li>"+ oggetto + "      "+  "<img src=\""+ result + "\"> <br>"
