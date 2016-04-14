@@ -95,7 +95,6 @@ app.post('/update_list', function(req,res){
             PersonModel.find({"id": req.body.Id, "Password": req.body.Password}, function(err, num){
                 if (num.length<=0) res.send('This resource is not avaible for you.');
                 else{
-					notifica.notifica("lista");
                     res.send(aggiornare_lista);
                 }
             });
@@ -112,7 +111,7 @@ app.post('/list', function(req,res){
                     ListModel.find({"ListId":req.body.ListId}, function(err,output){
 					output = output.toString().match(/Product: \'.+\'/ig);
 					var stringa="<html> <head> <script src=\"/stomp.js\"></script> \
-<script src=\"/client.js\"></script></head><body> <ul>";
+<script src=\"/client.js/"+req.body.ListId+"\"></script></head><body> <p align=\"center\"> <font size=\"48\">"+req.body.ListId+"</font> </p><ul>";
 					for (var j=0; j<output.length; j++)
 					{
 						var oggetto = output[j].replace(/Product: '/,"");
@@ -205,6 +204,7 @@ app.post('/additem', function(req, res) {
                     var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
                     ListModel.update({"ListId":req.body.ListId},{ "$push": {"entry": tObj} }, function(err,res1){
                         if(err){console.log(err);}
+						notifica.notifica(req.body.ListId);
                         res.send(choose_list);
                     });
                 }
@@ -223,9 +223,10 @@ app.post('/removeitem', function(req, res) {
             if(num[0].Accessible.length ==0) res.send('This resource is not avaible for you.');
             for(var i=0; i< num[0].Accessible.length; i++){
                 if(num[0].Accessible[i]==req.body.ListId){
-                    var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
+                    var tObj = {Product: req.body.Product, Amount: req.body.Amount};
                     ListModel.update({"ListId":req.body.ListId},{ "$pull": {"entry": tObj} }, function(err,res1){
                         if(err){console.log(err);}
+							notifica.notifica(req.body.ListId);
                             res.send(choose_list);
                     });
                 }
@@ -237,8 +238,11 @@ app.post('/removeitem', function(req, res) {
     });
 });
 
-app.get('/client.js', function(req,res){
-	res.send(client);
+app.get('/client.js/:param1', function(req,res){
+	var nomelista = req.params.param1
+	var risposta = client.toString()
+	risposta = risposta.replace(/var nomelista = ".*";/,"var nomelista = \"" + nomelista +"\"")
+	res.send(risposta);
 });
 
 app.get('/stomp.js', function(req,res){
