@@ -59,7 +59,7 @@ app.get('/choose_list', function(req, res){
 //FUNZIONE CHE APRE LA LISTA SENZA STAMPA (PER UPDATE)
 app.get('/update_list', function(req,res){
     ListModel.count({"ListId": req.query.ListId}, function(err, nume){
-        if (nume<=0) res.send('List name do not exist');
+        if (nume<=0) res.send('This list doesn\'t exist.');
         else{
             res.send(aggiornare_lista);
         }
@@ -98,7 +98,7 @@ app.post('/newlist', function(req, res) {
 
 app.post('/removelist', function(req, res) {
     ListModel.count({"ListId": req.body.ListId}, function(err, nume){
-        if (nume<=0) res.send('List name do not exist');
+        if (nume<=0) res.send('This list doesn\'t exist.');
         else{
             ListModel.remove({"ListId":req.body.ListId}, function(err,res1){
                 res.send(choose_list);
@@ -111,7 +111,7 @@ app.post('/removelist', function(req, res) {
 //TO DO: controllare che l' item non sia già nella lista, se c'è aggiornare la quantità
 app.post('/additem', function(req, res) {
     ListModel.count({"ListId": req.body.ListId}, function(err, nume){
-        if (nume<=0) res.send('List name do not exist');
+        if (nume<=0) res.send('This list doesn\'t exist.');
         else{                
             var tObj = {Product: req.body.Product, Amount: req.body.Amount, Price: req.body.Price };
             ListModel.update({"ListId":req.body.ListId},{ "$push": {"entry": tObj} }, function(err,res1){
@@ -125,7 +125,7 @@ app.post('/additem', function(req, res) {
 
 app.post('/removeitem', function(req, res) {
     ListModel.count({"ListId": req.body.ListId}, function(err, nume){
-        if (nume<=0) res.send('List name do not exist');
+        if (nume<=0) res.send('This list doesn\'t exist.');
         else{                
             var tObj = {Product: req.body.Product, Amount: req.body.Amount};
             ListModel.update({"ListId":req.body.ListId},{ "$pull": {"entry": tObj} }, function(err,res1){
