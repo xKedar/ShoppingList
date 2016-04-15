@@ -57,9 +57,8 @@ app.get('/choose_list', function(req, res){
 	});
 
 //FUNZIONE CHE APRE LA LISTA SENZA STAMPA (PER UPDATE)
-app.post('/update_list', function(req,res){
-	console.log(req.body.ListId)
-    ListModel.count({"ListId": req.body.ListId}, function(err, nume){
+app.get('/update_list', function(req,res){
+    ListModel.count({"ListId": req.query.ListId}, function(err, nume){
         if (nume<=0) res.send('List name do not exist');
         else{
             res.send(aggiornare_lista);
@@ -67,17 +66,14 @@ app.post('/update_list', function(req,res){
     });
 });
 //va gestita la lista vuota
-app.post('/list', function(req,res){
-    ListModel.find({"ListId":req.body.ListId}, function(err,output){
+app.get('/list', function(req,res){
+    ListModel.find({"ListId":req.query.ListId}, function(err,output){
         if(output.length<=0) res.send('This list doesn\'t exist.');
             else{
-			console.log(output)
-            var prodotti = output.toString().match(/Product: \'.+\'/ig);
             var stringa="<html> <head> <script src=\"/stomp.js\"></script> \
-    <script src=\"/client.js/"+req.body.ListId+"\"></script></head><body> <p align=\"center\"> <font size=\"48\">"+req.body.ListId+"</font> </p><ul>";
-            for (var j=0; j<output.length; j++){
-                var oggetto = prodotti[j].replace(/Product: '/,"");
-                oggetto = oggetto.replace(/'/,"");
+    <script src=\"/client.js/"+req.query.ListId+"\"></script></head><body> <p align=\"center\"> <font size=\"48\">"+req.query.ListId+"</font> </p><ul>";
+            for (var j=0; j<output[0].entry.length; j++){
+                var oggetto = output[0].entry[j].Product
                 var result = "http://www.sognipedia.it/wp-content/uploads/2015/04/farfalla.jpg"//google.cerca(oggetto);
                 stringa+="<li>"+ oggetto + "      "+  "<img src=\""+ result + "\"> <br>"
             }
@@ -95,7 +91,7 @@ app.post('/newlist', function(req, res) {
             var newList = new ListModel();
             newList.ListId = req.body.ListId;
             newList.save(function(err){console.log(err);});
-            res.send(nuova_lista);
+            res.redirect("/update_list?ListId="+req.body.ListId);
         }
     });
 });
