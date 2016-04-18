@@ -71,11 +71,14 @@ app.get('/list', function(req,res){
     ListModel.find({"ListId":req.query.ListId}, function(err,output){
         if(output.length<=0) res.send('This list doesn\'t exist.');
             else{
-            var stringa="<html> <head> <script src=\"/stomp.js\"></script> \
-    <script src=\"/client.js/"+req.query.ListId+"\"></script></head><body> <p align=\"center\"> <font size=\"48\">"+req.query.ListId+"</font> </p><ul>";
-            for (var j=0; j<output[0].entry.length; j++){
+            var stringa='<html> <head> <script src=\"/stomp.js\"></script> \
+    <script src=\"/client.js/'+req.query.ListId+'\"></script></head>\
+<BODY style="background-image: url(back.jpg); \
+	  background-repeat:no-repeat; \
+	  background-position: center;">	<p align=\"center\"> <font size=\"48\">'+req.query.ListId+'</font> </p><ul>';
+				for (var j=0; j<output[0].entry.length; j++){
                 var oggetto = output[0].entry[j].Product
-                var result = "http://www.sognipedia.it/wp-content/uploads/2015/04/farfalla.jpg"//google.cerca(oggetto);
+                var result = google.cerca(oggetto); //"http://www.sognipedia.it/wp-content/uploads/2015/04/farfalla.jpg"//
                 stringa+="<li>"+ oggetto + "      "+  "<img src=\""+ result + "\"> <br>"
             }
             stringa+=" </ul></body> </html>"

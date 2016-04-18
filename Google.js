@@ -4,11 +4,13 @@ var key = 'key=AIzaSyArvzol2VewcHPeTzjclk6UgN5wNW9KZB8'
 var cx = '&cx=003474991555944832998:v-zlfbj1rlc'
 var type = '&searchType=image'
 var size = '&imgSize=small'
+var num = '&num=1'
+var safe = '&safe=high'
+var host = '&googlehost=google.it'
 
 module.exports = {
-	cerca: function(query){
-		var res = request('GET','https://www.googleapis.com/customsearch/v1?'+key+cx+type+size+'&q='+query);
-		//parse body
+	cerca: function(query){	
+		var res = request('GET','https://www.googleapis.com/customsearch/v1?'+key+cx+host+type+size+num+safe+'&q='+query);
 		var risultato = JSON.parse(res.getBody());
 		risultato = risultato.items[0].link;
 		return risultato;		
