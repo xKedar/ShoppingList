@@ -61,7 +61,8 @@ app.get('/update_list', function(req,res){
     ListModel.count({"ListId": req.query.ListId}, function(err, nume){
         if (nume<=0) res.send('This list doesn\'t exist.');
         else{
-            res.send(aggiornare_lista);
+			var aggiornare_dinamica = aggiornare_lista.replace(/<input name="ListId" type="text" value=""/g,'<input name="ListId" type="text" value="'+ req.query.ListId +'"')
+            res.send(aggiornare_dinamica);
         }
     });
 });
