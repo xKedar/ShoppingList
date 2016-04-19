@@ -78,8 +78,9 @@ app.get('/list', function(req,res){
 	  background-position: center;">	<p align=\"center\"> <font size=\"48\">'+req.query.ListId+'</font> </p><ul>';
 				for (var j=0; j<output[0].entry.length; j++){
                 var oggetto = output[0].entry[j].Product
-                var result = google.cerca(oggetto); //"http://www.sognipedia.it/wp-content/uploads/2015/04/farfalla.jpg"//
-                stringa+="<li>"+ oggetto + "      "+  "<img src=\""+ result + "\"> <br>"
+				var amount = output[0].entry[j].Amount
+                var result = /*google.cerca(oggetto); */"http://www.sognipedia.it/wp-content/uploads/2015/04/farfalla.jpg"//
+                stringa+="<li>"+ oggetto +":   "+ amount +"      "+  "<img src=\""+ result + "\"> <br>"
             }
             stringa+=" </ul></body> </html>"
             res.send(stringa);
