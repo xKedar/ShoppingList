@@ -5,7 +5,6 @@ var client = Stomp.over(ws);
 var on_connect = function() {
     console.log(nomelista);
 	id = client.subscribe("/queue/"+nomelista, function(d) {
-		console.log("subscribed to "+nomelista)
 		alert(d.body)
     });
 		

@@ -1,4 +1,5 @@
 var amqp = require('amqplib/callback_api');
+var messageTTL = 2000	//milliseconds
 
 module.exports = {
 	
@@ -7,8 +8,8 @@ module.exports = {
 			conn.createChannel(function(err, ch) {
 			var q = nomeLista;
 
-			ch.assertQueue(q, {durable: true});
-			ch.sendToQueue(q, new Buffer("this shopping list has been modified, refresh to receive the update"));
+			ch.assertQueue(q);
+			ch.sendToQueue(q, new Buffer("this shopping list has been modified, refresh to receive the update"), {expiration: messageTTL});
 		  });
 		});
 	}
