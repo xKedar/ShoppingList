@@ -106,7 +106,7 @@ app.post('/removelist', function(req, res) {
         if (nume<=0) res.send('This list doesn\'t exist.');
         else{
             ListModel.remove({"ListId":req.body.ListId}, function(err,res1){
-                res.send(choose_list);
+                res.redirect("/choose_list");
             });
         }
     });
@@ -122,7 +122,7 @@ app.post('/additem', function(req, res) {
             ListModel.update({"ListId":req.body.ListId},{ "$push": {"entry": tObj} }, function(err,res1){
             if(err){console.log(err);}
                 notifica.notifica(req.body.ListId);
-                res.send(choose_list);
+                res.redirect("/update_list?ListId="+req.body.ListId);
                 });
             }
     });
@@ -136,7 +136,7 @@ app.post('/removeitem', function(req, res) {
             ListModel.update({"ListId":req.body.ListId},{ "$pull": {"entry": tObj} }, function(err,res1){
                 if(err){console.log(err);}
                     notifica.notifica(req.body.ListId);
-                    res.send(choose_list);
+                    res.redirect("/update_list?ListId="+req.body.ListId);
             });
         }
     });
